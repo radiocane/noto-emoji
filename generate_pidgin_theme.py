@@ -17,13 +17,12 @@ from PIL import Image
 This script will create a directory, fill it with images taken from this
 project and create a suitable text file called 'theme'. The directory can
 be used as a pidgin smiley theme [0, 1]. Flags for country subdivisions are
-encoded according to two proposed specifications [2,3].
+encoded according to the specification [2].
 
 References
 [0] https://github.com/nobuyukinyuu/pidgin-emoji
 [1] https://developer.pidgin.im/wiki/SmileyThemes
-[2] http://www.unicode.org/reports/tr51/tr51-10.html
-[3] http://www.unicode.org/reports/tr51/tr51-11.html"""
+[2] http://www.unicode.org/reports/tr51/tr51-11.html"""
 
 IMG_DIR = os.path.join('png', '128')
 FLAG_DIR = os.path.join('third_party', 'region-flags', 'png')
@@ -32,8 +31,10 @@ THEME_DIR = 'noto-emoji'
 os.mkdir(THEME_DIR)
 theme = open(os.path.join(THEME_DIR, 'theme'), 'w')
 # Theme header
+theme.write('# Encoding utf-8\n')
+theme.write('# https://github.com/radiocane/noto-emoji\n')
 theme.write('Name=Noto Emoji\n')
-theme.write('Description=Forked from github.com/googlei18n/noto-emoji/\n')
+theme.write('Description=All Google/Android emojis\n')
 theme.write('Icon=EU.png\n')
 theme.write('Author=White_Rabbit\n\n')
 
@@ -59,8 +60,9 @@ for f in imgs:
 flags = os.listdir(FLAG_DIR)
 flags.sort()
 RIS_BASE = 0x1F1A5  # REGION INDICATOR SYMBOL
+TAG_BASE = u'\U0001F3F4'
 TAG_SPEC = 0xE0000
-TAG_TERM = u'\uE007F'
+TAG_TERM = u'\U000E007F'
 links = {}
 for g in flags:
     # Get encoding
@@ -77,15 +79,13 @@ for g in flags:
         # Country subdivision -> tag_base + tag_spec: cc s* + tag_term
         # 'cc' = country
         # 's*' = subdivision
-        letters = g[:2].lower() + g[3:6].lower()
+        letters = g.rstrip('.png').replace('-', '').lower()
         tag_spec = u''.join(unichr(TAG_SPEC + ord(l)) for l in letters)
-        tr51_10 = u'\u1F3F3' + tag_spec + TAG_TERM
-        tr51_11 = u'\u1F3F4' + tag_spec + TAG_TERM
-        g_uni = tr51_10 + u'\t' + tr51_11
+        g_uni = TAG_BASE + tag_spec + TAG_TERM
 
     source = os.path.join(FLAG_DIR, g)
     # Some 2-letter flags are symlinks to 2-letter flags. Populate a dict
-    # with key=pointed val=list of pointing.
+    # with key=pointed val=tab-separated pointing.
     if os.path.islink(source):
         pointed = os.readlink(source)
         pointed_uni = unichr(RIS_BASE + ord(pointed[0])) + unichr(RIS_BASE + ord(pointed[1]))
@@ -132,4 +132,4 @@ for i in os.listdir(THEME_DIR):
     t_height = int(round(img.height / ratio))
     img.resize((TARGET_WIDTH, t_height), Image.ANTIALIAS).save(i_path)
 
-print('Resize completd.')
+print('Resize complted.')
