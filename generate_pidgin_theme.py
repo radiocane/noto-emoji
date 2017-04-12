@@ -132,4 +132,4 @@ for i in os.listdir(THEME_DIR):
     t_height = int(round(img.height / ratio))
     img.resize((TARGET_WIDTH, t_height), Image.ANTIALIAS).save(i_path)
 
-print('Resize complted.')
+print('Resize completed.')
