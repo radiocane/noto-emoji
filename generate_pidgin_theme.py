@@ -1,11 +1,12 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 #
 # Copyright 2017 White_Rabbit.
 #
 # Licensed under the CC0.
 # https://creativecommons.org/publicdomain/zero/1.0/legalcode
 
-from __future__ import division
+from __future__ import division, print_function
 
 import os
 import shutil
@@ -27,6 +28,28 @@ References
 IMG_DIR = os.path.join('png', '128')
 FLAG_DIR = os.path.join('third_party', 'region-flags', 'png')
 THEME_DIR = 'noto-emoji'
+
+# Print iterations progress
+# Shameless copy from https://stackoverflow.com/questions/3173320/
+def printProgressBar (iteration, total, prefix='', suffix='', decimals=1, length=100, fill='█'):
+    """
+    Call in a loop to create terminal progress bar
+    @params:
+        iteration : current iteration (Int)
+        total     : total iterations (Int)
+        prefix    : prefix string (Str)
+        suffix    : suffix string (Str)
+        decimals  : positive number of decimals in percent complete (Int)
+        length    : character length of bar (Int)
+        fill      : bar fill character (Str)
+    """
+    percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
+    filledLength = int(length * iteration // total)
+    bar = fill * filledLength + '-' * (length - filledLength)
+    print('\r%s |%s| %s%% %s' % (prefix, bar, percent, suffix), end='\r')
+    # Print New Line on Complete
+    if iteration == total:
+        print()
 
 os.mkdir(THEME_DIR)
 theme = open(os.path.join(THEME_DIR, 'theme'), 'w')
@@ -123,7 +146,11 @@ print('Resizing images, please wait...')
 
 # Resize images
 TARGET_WIDTH = 25
-for i in os.listdir(THEME_DIR):
+images = os.listdir(THEME_DIR)
+j = 0
+l = len(images)
+printProgressBar(j, l, prefix='Progress:', suffix='Complete', length=50)
+for i in images:
     if i[-3:] != 'png':
         continue
     i_path = os.path.join(THEME_DIR, i)
@@ -131,5 +158,8 @@ for i in os.listdir(THEME_DIR):
     ratio = img.width / TARGET_WIDTH
     t_height = int(round(img.height / ratio))
     img.resize((TARGET_WIDTH, t_height), Image.ANTIALIAS).save(i_path)
+    j += 1
+    if (not (j % 10)) or (j == l-1):
+        printProgressBar(j, l, prefix='Progress:', suffix='Complete', length=50)
 
-print('Resize completed.')
+print('\nResize completed.')
